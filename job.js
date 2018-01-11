@@ -4,6 +4,6 @@
 
 /**
  * @method
- * @name handle
+ * @name handler
  * @return void
  */

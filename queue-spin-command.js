@@ -20,7 +20,9 @@ class QueueSpinCommand {
     }
 
     async action(queueName) {
-        return this.queuesProvider.provide(queueName).spin();
+        while (true) {
+            await this.queuesProvider.exec(queueName).catch(error => error);
+        }
     }
 }
 

@@ -2,6 +2,15 @@ class Queue {
     constructor(transportLayer, serializer) {
         this.transportLayer = transportLayer;
         this.serializer     = serializer;
+        this.middlewares    = [];
+    }
+
+    /**
+     *
+     * @param {Middleware} middleware
+     */
+    addMiddlewale(middleware) {
+        this.middlewares.push(middleware);
     }
 
     /**
@@ -9,20 +18,22 @@ class Queue {
      * @param {Job} job
      * @return {Promise<void>}
      */
-    async enqueue(job) {
+    enqueue(job) {
         let serializedJob = this.serializer.serialize(job);
         return this.transportLayer.send(serializedJob);
     }
 
-    async spin() {
-        return new Promise((resolve) => {
-            this.transportLayer.receive((jobData) => {
-                let job = this.serializer.deserialize(jobData.toString());
-                // todo
-                job.handle();
-                resolve();
-            });
-        });
+    async compose() {
+        let job = await this.getJob();
+        return this.middlewares.reduce((previousValue, currentValue) => {
+            return currentValue.handler(job, previousValue);
+        }, job.handler());
+    }
+
+    async getJob() {
+        let jobData = await this.transportLayer.receive();
+        if (!jobData) return {handler: () => {}};
+        return this.serializer.deserialize(jobData);
     }
 }
 

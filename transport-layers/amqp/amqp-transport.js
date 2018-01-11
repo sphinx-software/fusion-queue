@@ -25,10 +25,9 @@ class AmqpTransport {
         );
     }
 
-    async receive(callback) {
-        this.channel.consume(this.nameChannel, (message) => {
-            callback(message.content);
-        }, this.options.receive);
+    async receive() {
+        let msg = await this.channel.get(this.nameChannel, this.options.receive);
+        return msg && msg.content.toString();
     }
 }
 

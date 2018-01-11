@@ -1,7 +1,8 @@
-const TransportFactory = require('./transport-factory');
-const QueueSpinCommand = require('./queue-spin-command');
-const QueueProvider    = require('./queue-provider');
-const Queue            = require('./queue');
+const TransportFactory            = require('./transport-layers/transport-factory');
+const QueueSpinCommand            = require('./queue-spin-command');
+const QueueProvider               = require('./queue-provider');
+const Queue                       = require('./queue');
+const TransportMiddlewareProvider = require('./queue-behavior/middleware.provider');
 
 exports.register = async (container) => {
 
@@ -22,12 +23,25 @@ exports.register = async (container) => {
 };
 
 exports.boot = async (container) => {
-    const consoleKernel = await container.make('console.kernel');
-    const transports    = await container.make('transports');
-    const queueProvider = await container.make('queueProvider');
-    const serializer    = await container.make('serializer');
+    const queueMiddlewareProvider = new TransportMiddlewareProvider();
+    const consoleKernel           = await container.make('console.kernel');
+    const transports              = await container.make('transports');
+    const queueProvider           = await container.make('queueProvider');
+    const serializer              = await container.make('serializer');
+    const config                  = await container.make('config');
+
     for (const nameQueue in transports) {
         let queue = new Queue(transports[nameQueue], serializer);
+
+        let configTransportMiddlewares = config.queue.transports[nameQueue].middlewares || [];
+        configTransportMiddlewares.map(stringConfig => {
+
+            let middleware = queueMiddlewareProvider.provideFromConfig(stringConfig, queue);
+
+            queue.addMiddlewale(middleware);
+
+        });
+
         queueProvider.register(nameQueue, queue);
     }
 

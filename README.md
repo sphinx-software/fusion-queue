@@ -2,7 +2,7 @@
 ===============
 
 A queue for sphinx-fusion . support [`rabitmq`](https://www.rabbitmq.com/) using [amqp](https://github.com/squaremo/amqp.node)
-## Job
+## implements Job
 ```js
 class Job {
 

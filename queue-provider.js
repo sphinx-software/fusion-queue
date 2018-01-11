@@ -17,6 +17,14 @@ class QueueProvider {
         return this;
     }
 
+    exec(queueName) {
+        return this.provide(queueName).compose();
+    }
+
+    execAll() {
+        return Promise.all(this.queues.keys().map(this.exec.bind(this)));
+    }
+
 }
 
 module.exports = QueueProvider;

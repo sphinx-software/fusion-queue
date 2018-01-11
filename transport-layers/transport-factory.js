@@ -1,7 +1,7 @@
 const VError        = require('verror');
 const amqp          = require('amqplib');
 const Promise       = require('bluebird');
-const AmqpTransport = require('./transport-layers/amqp/amqp-transport');
+const AmqpTransport = require('./amqp/amqp-transport');
 
 class TransportFactory {
 
