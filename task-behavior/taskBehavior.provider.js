@@ -1,9 +1,9 @@
 const VError      = require('verror');
-const RetryOnFail = require('../queue-behavior/retryOnFail');
-const Timeout     = require('../queue-behavior/timeout');
-const RotateBack  = require('../queue-behavior/rotateback');
+const RetryOnFail = require('./retryOnFail');
+const Timeout     = require('./timeout');
+const RotateBack  = require('./rotateback');
 
-class MiddlewareProvider {
+class TaskBehaviorProvider {
 
     provideFromConfig(stringConfig, queue) {
         let [name, config] = this.buildConfig(stringConfig);
@@ -43,4 +43,4 @@ class MiddlewareProvider {
     }
 }
 
-module.exports = MiddlewareProvider;
+module.exports = TaskBehaviorProvider;

@@ -1,11 +1,20 @@
 const VError = require('verror');
 
-class QueueProvider {
+class QueueManager {
     constructor(queues = {}) {
         this.queues = queues;
     }
 
-    provide(queueName) {
+    setDefault(defaultName) {
+        this.defaultName = defaultName;
+        return this;
+    }
+
+    enqueue(...params) {
+        return this.to(this.defaultName).enqueue(...params);
+    }
+
+    to(queueName) {
         if (!this.queues[queueName]) {
             throw new VError(`E_QUEUE: queue [${queueName}] not found`);
         }
@@ -17,14 +26,6 @@ class QueueProvider {
         return this;
     }
 
-    exec(queueName) {
-        return this.provide(queueName).compose();
-    }
-
-    execAll() {
-        return Promise.all(this.queues.keys().map(this.exec.bind(this)));
-    }
-
 }
 
-module.exports = QueueProvider;
+module.exports = QueueManager;

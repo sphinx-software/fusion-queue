@@ -1,8 +1,8 @@
 const TransportFactory            = require('./transport-layers/transport-factory');
 const QueueSpinCommand            = require('./queue-spin-command');
-const QueueProvider               = require('./queue-provider');
-const Queue                       = require('./queue');
-const TransportMiddlewareProvider = require('./queue-behavior/middleware.provider');
+const QueueProvider               = require('./queue/queue.provider');
+const Queue                       = require('./queue/queue');
+const TransportMiddlewareProvider = require('./task-behavior/taskBehavior.provider');
 
 exports.register = async (container) => {
 
@@ -42,7 +42,7 @@ exports.boot = async (container) => {
 
         });
 
-        queueProvider.register(nameQueue, queue);
+        queueProvider.register(nameQueue, queussse);
     }
 
     await consoleKernel.register('command.queue-spin');
