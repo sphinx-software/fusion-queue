@@ -3,13 +3,10 @@ const RetryOnFail = require('./retryOnFail');
 const Timeout     = require('./timeout');
 const RotateBack  = require('./rotateback');
 
+let instance;
+
 class TaskBehaviorProvider {
-
-    provideFromConfig(stringConfig, queue) {
-        let [name, config] = this.buildConfig(stringConfig);
-        return this.provide(name, config, queue);
-    }
-
+    
     provide(name, config, queue) {
         switch (name) {
             case 'timeout':
@@ -24,8 +21,11 @@ class TaskBehaviorProvider {
         }
     }
 
-    buildConfig(stringConfig) {
-        return stringConfig.split(':');
+    static shareInstance() {
+        if (!instance) {
+            instance = new TaskBehaviorProvider();
+        }
+        return instance;
     }
 
     makeTimeout(config) {

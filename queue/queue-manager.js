@@ -21,6 +21,10 @@ class QueueManager {
         return this.queues[queueName];
     }
 
+    exec(...params) {
+        this.to(this.defaultName).exec(...params);
+    }
+
     register(queueName, queue) {
         this.queues[queueName] = queue;
         return this;

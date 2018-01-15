@@ -8,7 +8,7 @@ class RetryOnFail {
         this.number = number;
     }
 
-    handler(job, next) {
+    handle(job, next) {
         return this.tryAgain(job, next, this.number);
     }
 
@@ -20,7 +20,7 @@ class RetryOnFail {
         try {
             await next;
         } catch (error) {
-            return this.tryAgain(job, job.handler(), number - 1);
+            return this.tryAgain(job, job.handle(), number - 1);
         }
     }
 }

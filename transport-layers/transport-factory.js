@@ -26,12 +26,14 @@ class TransportFactory {
      * @param configQueue
      * @return {Promise<{QueueTransportLayer}>}
      */
-    async makeFromConfig(configQueue) {
-        return Promise.props(configQueue.use.reduce((queues, currentValue) => {
-            let config           = configQueue.transports[currentValue];
-            queues[currentValue] = this.make(config.adapter, config);
-            return queues;
-        }, {}));
+    makeFromConfig(configQueue) {
+        return Promise.props(
+            Object.keys(configQueue.queues).reduce((queues, currentValue) => {
+                let config           = configQueue.queues[currentValue];
+                queues[currentValue] = this.make(config.adapter, config);
+                return queues;
+            }, {})
+        );
     }
 
     /**

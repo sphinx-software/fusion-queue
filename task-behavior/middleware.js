@@ -4,7 +4,7 @@
 
 /**
  * @method
- * @name handler
+ * @name handle
  * @param {Job} job {Promise} next
  * @return Promise<>
  */

@@ -3,8 +3,8 @@
  */
 class QueueSpinCommand {
 
-    constructor(queueProvider) {
-        this.queuesProvider = queueProvider;
+    constructor(queueManager) {
+        this.queueManager = queueManager;
     }
 
     get name() {
@@ -21,7 +21,11 @@ class QueueSpinCommand {
 
     async action(queueName) {
         while (true) {
-            await this.queuesProvider.exec(queueName).catch(error => error);
+            await this.queueManager.to(queueName).
+                exec().
+                catch(error => {
+                    console.log(error);
+                });
         }
     }
 }

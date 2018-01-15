@@ -10,7 +10,7 @@ class Timeout {
         });
     }
 
-    handler(job, next) {
+    handle(job, next) {
         return Promise.race([next, this.timer()]);
     }
 

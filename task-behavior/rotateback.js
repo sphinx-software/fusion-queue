@@ -8,7 +8,7 @@ class RotateBack {
         this.queue = queue;
     }
 
-    async handler(job, next) {
+    async handle(job, next) {
         try {
             return await next;
         } catch (error) {

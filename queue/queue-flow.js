@@ -1,34 +1,61 @@
+const RetryOnFail = require('../task-behavior/retryOnFail');
+const Timeout     = require('../task-behavior/timeout');
+const RotateBack  = require('../task-behavior/rotateback');
+const Delay       = require('../task-behavior/delay');
+
 class QueueFlow {
 
-    constructor() {
+    constructor(queue) {
         this.handlerSend    = [];
         this.handlerReceive = [];
+        this.queue          = queue;
     }
 
-    delay() {
+    delay(time) {
+        this.handlerSend.push(
+            new Delay(time)
+        );
         return this;
     }
 
-    timeout() {
+    timeout(time) {
+        this.handlerReceive.push(
+            new Timeout(time)
+        );
         return this;
     }
 
-    retry() {
+    retry(number) {
+        this.handlerReceive.push(new RetryOnFail(number));
         return this;
     }
 
     pushBack() {
+        this.handlerReceive.push(new RotateBack(this.queue));
         return this;
     }
 
-    beforeSend(callback) {
-        this.handlerSend.reduce((previousValue, currentValue) => {
-            return currentValue.handler(previousValue);
-        }, callback);
+    /**
+     *
+     * @param callback
+     * @return {Promise}
+     */
+    async beforeSend(callback) {
+        return this.handlerSend.reduce((previous, current) => {
+            return current.handle(previous);
+        }, callback)();
     }
 
-    afterSend(callback) {
-
+    /**
+     *
+     * @param {Job} job
+     * @param {Promise} next
+     * @return {Promise}
+     */
+    afterSend(job, next) {
+        return this.handlerReceive.reduce((previousValue, currentValue) => {
+            return currentValue.handle(job, previousValue);
+        }, next);
     }
 }
 

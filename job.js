@@ -1,9 +1,12 @@
-/**
- * @interface Job
- */
+class Job {
 
-/**
- * @method
- * @name handler
- * @return void
- */
+    handle() {
+        throw new Error('not implemented');
+    }
+
+    get flow() {
+        return {};
+    }
+}
+
+module.exports = Job;
