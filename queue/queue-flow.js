@@ -30,7 +30,8 @@ class QueueFlow {
         return this;
     }
 
-    pushBack() {
+    pushBack(isPushBack) {
+        if (!isPushBack) return this;
         this.handlerReceive.push(new RotateBack(this.queue));
         return this;
     }

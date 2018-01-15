@@ -3,14 +3,30 @@
 
 A queue for sphinx-fusion . support [`rabitmq`](https://www.rabbitmq.com/) using [amqp](https://github.com/squaremo/amqp.node)
 ## implements Job
+
+Params
+
+options {Object}: see more on options section
+returns {GeneratorFunction}
+
 ```js
 class Job {
 
     constructor(name) {
         this.name = name;
     }
+    
+    get flow() {
+        return {
+            delay:1000,
+            timeout:15000,
+            retry:3,
+            pushBack:true,
+        }
+    }
 
     handle() {
+        // run task 
         console.log(`hello ${this.name}`);
     }
 }
@@ -28,23 +44,23 @@ serializer.forType(Job,
 ## Controller
 
 ```js
-contructor(queueProvider) {
-    this.queueProvider = queueProvider;
+contructor(queueManager) {
+    this.queueManager = queueManager;
 }
 static get dependencies() {
-    return ['queueProvider'];
+    return ['queueManager'];
 }
 
 use() {
-    this.queueProvider.provide('myQueue').enqueue(new Job('word'));
+    this.queueManager.to('myQueue').enqueue(new Job('word'));
 }
 ```
 
 ## Options queue
 ```js
 module.exports = {
-    use       : ['myQueue', 'myQueue1'],
-    transports: {
+    default       : 'myQueue',
+    queues: {
         myQueue : {
             url        : 'amqp://localhost',
             adapter    : 'amqp',
