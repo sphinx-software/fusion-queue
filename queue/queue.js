@@ -5,6 +5,7 @@ const nullJob          = new NullJob();
 
 class Queue {
     constructor(transportLayer, serializer) {
+        if (!transportLayer) throw new Error('transportLayer not found');
         this.transportLayer = transportLayer;
         this.serializer     = serializer;
     }

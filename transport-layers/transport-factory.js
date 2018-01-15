@@ -1,7 +1,10 @@
-const VError        = require('verror');
-const amqp          = require('amqplib');
-const Promise       = require('bluebird');
+const VError      = require('verror');
+const amqp        = require('amqplib');
+const RSMQPromise = require('rsmq-promise');
+const Promise     = require('bluebird');
+
 const AmqpTransport = require('./amqp/amqp-transport');
+const RsmqTransport = require('./redis/redis-transport');
 
 class TransportFactory {
 
@@ -15,6 +18,8 @@ class TransportFactory {
         switch (transport) {
             case 'amqp':
                 return this.makeAmqpTransport(config);
+            case 'rsmq':
+                return this.makeRedisTransport(config);
             default :
                 throw new VError(
                     `E_QUEUE: transport [${transport}] is not supported`);
@@ -44,8 +49,18 @@ class TransportFactory {
     async makeAmqpTransport(config) {
         const connection = await amqp.connect(config.url);
         const channel    = await connection.createChannel();
-        return new AmqpTransport(channel, config).setNameChannel(
-            config.channelName).setOptions(config.options);
+        return new AmqpTransport(channel, config).
+            setNameChannel(config.channelName).
+            setOptions(config.options);
+    }
+
+    async makeRedisTransport(config) {
+        const rsmq       = new RSMQPromise(config);
+        const listQueues = await rsmq.listQueues();
+        if (listQueues.indexOf(config.channelName) === -1) {
+            await rsmq.createQueue({qname: config.channelName});
+        }
+        return new RsmqTransport(rsmq).setNameChannel(config.channelName);
     }
 }
 
