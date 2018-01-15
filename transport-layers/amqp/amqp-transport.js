@@ -26,6 +26,7 @@ class AmqpTransport {
     }
 
     async receive() {
+        await this.channel.assertQueue(this.nameChannel);
         let msg = await this.channel.get(this.nameChannel, this.options.receive);
         return msg && msg.content.toString();
     }
