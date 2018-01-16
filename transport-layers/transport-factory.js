@@ -3,8 +3,10 @@ const amqp        = require('amqplib');
 const RSMQPromise = require('rsmq-promise');
 const Promise     = require('bluebird');
 
-const AmqpTransport = require('./amqp/amqp-transport');
-const RsmqTransport = require('./redis/redis-transport');
+const AmqpTransport   = require('./amqp/amqp-transport');
+const RsmqTransport   = require('./redis/redis-transport');
+const MemoryTransport = require('./memory/memory-transport');
+const NullTransport   = require('./null/null-transport');
 
 class TransportFactory {
 
@@ -20,6 +22,10 @@ class TransportFactory {
                 return this.makeAmqpTransport(config);
             case 'rsmq':
                 return this.makeRedisTransport(config);
+            case 'nullmq':
+                return this.makeNullTransport(config);
+            case 'memorymq':
+                return this.makeMemoryTransport(config);
             default :
                 throw new VError(
                     `E_QUEUE: transport [${transport}] is not supported`);
@@ -57,10 +63,18 @@ class TransportFactory {
     async makeRedisTransport(config) {
         const rsmq       = new RSMQPromise(config);
         const listQueues = await rsmq.listQueues();
-        if (listQueues.indexOf(config.channelName) === -1) {
+        if (!listQueues.includes(config.channelName)) {
             await rsmq.createQueue({qname: config.channelName});
         }
         return new RsmqTransport(rsmq).setNameChannel(config.channelName);
+    }
+
+    makeMemoryTransport(config) {
+        return new MemoryTransport().setNameChannel(config.channelName);
+    }
+
+    makeNullTransport(config) {
+        return new NullTransport().setNameChannel(config.channelName);
     }
 }
 

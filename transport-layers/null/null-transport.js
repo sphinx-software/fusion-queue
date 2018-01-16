@@ -1,15 +1,14 @@
-class AmqpTransport {
-    constructor(channel) {
-        this.channel = channel;
-    }
+class NullTransport {
 
     setOptions(options = {}) {}
 
-    setNameChannel(nameChannel = '') {}
+    setNameChannel(nameChannel = '') {
+        return this;
+    }
 
     async send(jobData) {}
 
     async receive() {}
 }
 
-module.exports = AmqpTransport;
+module.exports = NullTransport;
