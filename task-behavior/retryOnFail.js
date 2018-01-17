@@ -4,7 +4,7 @@
  */
 class RetryOnFail {
 
-    constructor(number) {
+    constructor(number = 0) {
         this.number = number;
     }
 

@@ -1,18 +1,16 @@
-/**
- * @interface QueueTransportLayer
- */
+class TransportLayer {
+    constructor() {
+        this.configFlow = {};
+    }
 
-/**
- * @method
- * @name send
- * @param {string} JobData
- * @return Promise<void>
- */
+    setConfigFlow(configFlow) {
+        this.configFlow = configFlow;
+        return this;
+    }
 
+    getHandleOptions() {
+        return this.configFlow;
+    }
+}
 
-/**
- * @method
- * @name receive
- * @param {callback} JobData
- * @return Promise<void>
- */
+module.exports = TransportLayer;

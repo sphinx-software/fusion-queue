@@ -1,6 +1,8 @@
+const TransportLayer = require('../transport');
+
 let store = {};
 
-class MemoryTransport {
+class MemoryTransport extends TransportLayer {
 
     setNameChannel(nameChannel = '') {
         this.nameChannel   = nameChannel;

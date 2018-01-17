@@ -1,4 +1,6 @@
-class NullTransport {
+const TransportLayer = require('../transport');
+
+class NullTransport extends TransportLayer {
 
     setOptions(options = {}) {}
 

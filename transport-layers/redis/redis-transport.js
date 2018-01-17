@@ -1,5 +1,8 @@
-class RedisTransport {
+const TransportLayer = require('../transport');
+
+class RedisTransport extends TransportLayer {
     constructor(channel) {
+        super();
         this.channel = channel;
     }
 

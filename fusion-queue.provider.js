@@ -2,10 +2,16 @@ const TransportFactory = require('./transport-layers/transport-factory');
 const QueueSpinCommand = require('./queue-spin-command');
 const QueueManager     = require('./queue/queue-manager');
 const Queue            = require('./queue/queue');
+const Worker           = require('./worker/worker');
+const FlowProvider     = require('./flow/flow.provider');
 
 exports.register = async (container) => {
 
-    container.singleton('transportFactory', async () => new TransportFactory());
+    container.singleton('transportFactory', () => new TransportFactory());
+    container.singleton('worker', async () => {
+        const queueManager = await container.make('queueManager');
+        return new Worker(queueManager, new FlowProvider());
+    });
     container.singleton('queueManager', async () => {
         const configQueue = (await container.make('config')).queue;
         return new QueueManager().setDefault(configQueue.default);
@@ -18,8 +24,8 @@ exports.register = async (container) => {
     });
 
     container.singleton('command.queue-spin', async () => {
-        const queueManager = await container.make('queueManager');
-        return new QueueSpinCommand(queueManager);
+        const worker = await container.make('worker');
+        return new QueueSpinCommand(worker);
     });
 
 };
@@ -32,7 +38,6 @@ exports.boot = async (container) => {
 
     for (const nameQueue in transports) {
         let queue = new Queue(transports[nameQueue], serializer);
-
         queueManager.register(nameQueue, queue);
     }
 

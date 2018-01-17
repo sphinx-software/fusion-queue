@@ -4,13 +4,13 @@
  */
 class Delay {
 
-    constructor(time) {
+    constructor(time = 0) {
         this.time = time;
     }
 
-    handle(job) {
-        return () => new Promise((resolve) => {
-            setTimeout(() => resolve(job()), this.time);
+    handle(job, next) {
+        return new Promise((resolve) => {
+            setTimeout(() => resolve(job.handle()), this.time);
         });
     }
 

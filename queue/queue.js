@@ -1,7 +1,6 @@
-const NullJob          = require('../nullJob');
-const QueueFlowFactory = require('./queue-folow.factory');
-const queueFlowFactory = new QueueFlowFactory();
-const nullJob          = new NullJob();
+const NullJob = require('../nullJob');
+const Job     = require('../job');
+const nullJob = new NullJob();
 
 class Queue {
     constructor(transportLayer, serializer) {
@@ -17,25 +16,18 @@ class Queue {
      */
     enqueue(job) {
         let serializedJob = this.serializer.serialize(job);
-        return this.buildFlow(job).
-            beforeSend(() => this.transportLayer.send(serializedJob));
+        return this.transportLayer.send(serializedJob);
+    }
+
+    get options() {
+        return this.transportLayer.getHandleOptions();
     }
 
     /**
      *
-     * @param {Job} job
-     * @return {QueueFlow}
+     * @return {Promise<Job>}
      */
-    buildFlow(job) {
-        return queueFlowFactory.makeFromConfig(job.flow, this);
-    }
-
-    async exec() {
-        let job = await this.getJob();
-        return this.buildFlow(job).afterSend(job, job.handle());
-    }
-
-    async getJob() {
+    async onJob() {
         let jobData = await this.transportLayer.receive();
         if (!jobData) return nullJob;
         return this.serializer.deserialize(jobData);

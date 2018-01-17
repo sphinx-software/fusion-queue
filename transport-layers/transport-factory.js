@@ -14,9 +14,10 @@ class TransportFactory {
      *
      * @param transport
      * @param config
-     * @return {Promise<QueueTransportLayer>}
+     * @return {Promise<TransportLayer>}
      */
     make(transport, config) {
+        config.flow = this.buildConfigFlowFromString(config.flow);
         switch (transport) {
             case 'amqp':
                 return this.makeAmqpTransport(config);
@@ -31,6 +32,19 @@ class TransportFactory {
                     `E_QUEUE: transport [${transport}] is not supported`);
         }
     };
+
+    /**
+     *
+     * @param {string} configFlow
+     * @return {Object}
+     */
+    buildConfigFlowFromString(configFlow = '') {
+        return configFlow.split('|').reduce((previous, current) => {
+            let [name, value = true] = current.split(':');
+            previous[name]   = value;
+            return previous;
+        }, {});
+    }
 
     /**
      *
@@ -57,16 +71,23 @@ class TransportFactory {
         const channel    = await connection.createChannel();
         return new AmqpTransport(channel, config).
             setNameChannel(config.channelName).
-            setOptions(config.options);
+            setOptions(config.options).
+            setConfigFlow(config.flow);
     }
 
     async makeRedisTransport(config) {
-        const rsmq       = new RSMQPromise(config);
-        const listQueues = await rsmq.listQueues();
+        const rsmq                       = new RSMQPromise(config);
+        const listQueues                 = await rsmq.listQueues();
+        const {delay = 0, ...configFlow} = config.flow;
         if (!listQueues.includes(config.channelName)) {
-            await rsmq.createQueue({qname: config.channelName});
+            await rsmq.createQueue({
+                qname: config.channelName,
+                delay: delay
+            });
         }
-        return new RsmqTransport(rsmq).setNameChannel(config.channelName);
+        return new RsmqTransport(rsmq).
+            setNameChannel(config.channelName).
+            setConfigFlow(configFlow);
     }
 
     makeMemoryTransport(config) {

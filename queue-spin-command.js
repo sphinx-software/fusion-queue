@@ -3,8 +3,8 @@
  */
 class QueueSpinCommand {
 
-    constructor(queueManager) {
-        this.queueManager = queueManager;
+    constructor(worker) {
+        this.worker = worker;
     }
 
     get name() {
@@ -20,13 +20,12 @@ class QueueSpinCommand {
     }
 
     async action(queueName) {
-        while (true) {
-            await this.queueManager.to(queueName).
-                exec().
+        // while (true) {
+            await this.worker.runJob(queueName).
                 catch(error => {
                     console.log(error);
                 });
-        }
+        // }
     }
 }
 

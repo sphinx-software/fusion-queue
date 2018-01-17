@@ -1,5 +1,8 @@
-class AmqpTransport {
+const TransportLayer = require('../transport');
+
+class AmqpTransport extends TransportLayer {
     constructor(channel) {
+        super();
         this.channel = channel;
     }
 
@@ -27,7 +30,8 @@ class AmqpTransport {
 
     async receive() {
         await this.channel.assertQueue(this.nameChannel);
-        let msg = await this.channel.get(this.nameChannel, this.options.receive);
+        let msg = await this.channel.get(this.nameChannel,
+            this.options.receive);
         return msg && msg.content.toString();
     }
 }

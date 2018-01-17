@@ -5,15 +5,32 @@ class QueueManager {
         this.queues = queues;
     }
 
+    /**
+     *
+     * @param defaultName
+     * @return {QueueManager}
+     */
     setDefault(defaultName) {
         this.defaultName = defaultName;
         return this;
     }
 
-    enqueue(...params) {
-        return this.to(this.defaultName).enqueue(...params);
+    /**
+     *
+     * @param queueName
+     * @param queue
+     * @return {QueueManager}
+     */
+    register(queueName, queue) {
+        this.queues[queueName] = queue;
+        return this;
     }
 
+    /**
+     *
+     * @param queueName
+     * @return {Queue}
+     */
     to(queueName) {
         if (!this.queues[queueName]) {
             throw new VError(`E_QUEUE: queue [${queueName}] not found`);
@@ -21,13 +38,21 @@ class QueueManager {
         return this.queues[queueName];
     }
 
-    exec(...params) {
-        this.to(this.defaultName).exec(...params);
+    /**
+     *
+     * @param params
+     * @return {Promise<void>|Promise<*>}
+     */
+    enqueue(...params) {
+        return this.to(this.defaultName).enqueue(...params);
     }
 
-    register(queueName, queue) {
-        this.queues[queueName] = queue;
-        return this;
+    /**
+     *
+     * @return {Promise<Job>}
+     */
+    onJob() {
+        return this.to(this.defaultName).onJob();
     }
 
 }
