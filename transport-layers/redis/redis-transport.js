@@ -21,12 +21,12 @@ class RedisTransport extends TransportLayer {
         return this;
     }
 
-    send(jobData, {delay}) {
+    send(jobData, flow) {
         return this.channel.sendMessage({
             qname  : this.nameChannel,
             message: jobData,
             ...this.options.send,
-            ...{delay}
+            ...flow
         });
     }
 

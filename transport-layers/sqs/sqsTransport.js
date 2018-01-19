@@ -9,16 +9,16 @@ class SqsTransport extends TransportLayer {
         this.sqs.receiveMessage = promisify(sqs.receiveMessage);
         this.sqs.deleteMessage  = promisify(sqs.deleteMessage);
         this.sqs.sendMessage    = promisify(sqs.sendMessage);
-        this.params = {
-          MessageAttributes : {}
-        }
+        this.params             = {
+            MessageAttributes: {}
+        };
     }
 
     setConfigFlow(flow) {
-      let { delay , ...other } = flow;
-      this.configFlow          = other;
-      this.params.DelaySeconds = (flow.delay / 1000) || 0;
-      return this;
+        let {delay, ...other}    = flow;
+        this.configFlow          = other;
+        this.params.DelaySeconds = (flow.delay / 1000) || null;
+        return this;
     }
 
     setQueueUrl(queueUrl = '') {
@@ -31,16 +31,17 @@ class SqsTransport extends TransportLayer {
         return this;
     }
 
-    send(jobData) {
+    send(jobData, flow) {
+        let DelaySeconds = flow.delay || this.params.DelaySeconds;
         return this.sqs.sendMessage({
-            MessageBody : jobData,
-            ...this.params
+            MessageBody: jobData,
+            DelaySeconds
         });
     }
 
     receive() {
         return this.sqs.receiveMessage({
-          QueueUrl: this.params.QueueUrl
+            QueueUrl: this.params.QueueUrl
         });
     }
 

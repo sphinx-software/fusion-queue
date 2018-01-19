@@ -102,18 +102,23 @@ class TransportFactory {
     }
 
     makeMemoryTransport(config) {
-        return new MemoryTransport().setNameChannel(config.channelName);
+        return new MemoryTransport().
+            setNameChannel(config.channelName).
+            setConfigFlow(config.flow);
     }
 
     makeNullTransport(config) {
-        return new NullTransport().setNameChannel(config.channelName);
+        return new NullTransport().
+            setNameChannel(config.channelName).
+            setConfigFlow(config.flow);
     }
 
     async makeSQSTransport(config) {
-        const {flow, adapter, queueUrl, ...sqs} = config;
-        return new SQSTransport(new AWS.SQS(sqs)).
+        const {flow, accessKeyId, secretAccessKey, region, queueUrl} = config;
+        return new SQSTransport(
+            new AWS.SQS({accessKeyId, secretAccessKey, region})).
             setQueueUrl(queueUrl).
-            setConfigFlow(config.flow);
+            setConfigFlow(flow);
     }
 }
 
