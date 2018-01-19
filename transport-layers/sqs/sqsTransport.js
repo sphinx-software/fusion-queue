@@ -1,5 +1,5 @@
 const TransportLayer = require('../transport');
-const {promisify}    = require('util');
+const { promisify }  = require('util');
 
 class SqsTransport extends TransportLayer {
 
@@ -15,7 +15,7 @@ class SqsTransport extends TransportLayer {
     }
 
     setConfigFlow(flow) {
-        let {delay, ...other}    = flow;
+        let { delay, ...other }  = flow;
         this.configFlow          = other;
         this.params.DelaySeconds = (flow.delay / 1000) || null;
         return this;
@@ -31,18 +31,30 @@ class SqsTransport extends TransportLayer {
         return this;
     }
 
-    send(jobData, flow) {
-        let DelaySeconds = flow.delay || this.params.DelaySeconds;
+    getDelaySeconds(flow) {
+        let delay = flow.delay / 1000;
+        if (!isNaN(delay)) return delay;
+        return this.params.DelaySeconds;
+    }
+
+    send(jobData, flow = {}) {
         return this.sqs.sendMessage({
-            MessageBody: jobData,
-            DelaySeconds
+            QueueUrl    : this.params.QueueUrl,
+            MessageBody : jobData,
+            DelaySeconds: this.getDelaySeconds(flow)
         });
     }
 
-    receive() {
-        return this.sqs.receiveMessage({
+    async receive() {
+        let response = await this.sqs.receiveMessage({
             QueueUrl: this.params.QueueUrl
         });
+        if (!response.Messages) return null;
+        await this.delete({
+            QueueUrl     : this.params.QueueUrl,
+            ReceiptHandle: response.Messages[0].ReceiptHandle
+        });
+        return response.Messages[0].Body;
     }
 
     delete(params) {
