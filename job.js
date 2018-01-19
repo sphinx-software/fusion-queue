@@ -4,9 +4,8 @@ class Job {
         throw new Error('not implemented');
     }
 
-    get flow() {
-        return {};
-    }
+    get flow() {}
+    
 }
 
 module.exports = Job;

@@ -2,13 +2,15 @@ const Flow = require('./flow');
 
 class FlowProvider {
 
-    provide(queue) {
+    provide(job, queue) {
         let queueFlow = new Flow(queue);
-        let config    = queue.options;
-        if (config.pushBack) queueFlow.pushBack(config.pushBack);
+        let config    = {...queue.options, ...job.flow};
+        queueFlow.delay(config.delay);
         if (config.timeout) queueFlow.timeout(config.timeout);
+        queueFlow.retry(config.retry);
+        if (config.pushBack) queueFlow.pushBack(config.pushBack);
 
-        return queueFlow.delay(config.delay).retry(config.retry);
+        return queueFlow;
     }
 }
 

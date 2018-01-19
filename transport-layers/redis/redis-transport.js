@@ -4,6 +4,9 @@ class RedisTransport extends TransportLayer {
     constructor(channel) {
         super();
         this.channel = channel;
+        this.options = {
+            send: {}
+        };
     }
 
     setNameChannel(nameChannel = '') {
@@ -11,10 +14,19 @@ class RedisTransport extends TransportLayer {
         return this;
     }
 
-    send(jobData) {
+    setConfigFlow(configFlow) {
+        const {delay, ...other} = configFlow;
+        this.configFlow         = other;
+        this.options.send.delay = delay;
+        return this;
+    }
+
+    send(jobData, {delay}) {
         return this.channel.sendMessage({
             qname  : this.nameChannel,
-            message: jobData
+            message: jobData,
+            ...this.options.send,
+            ...{delay}
         });
     }
 

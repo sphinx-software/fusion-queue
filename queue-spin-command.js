@@ -20,12 +20,12 @@ class QueueSpinCommand {
     }
 
     async action(queueName) {
-        // while (true) {
+        while (true) {
             await this.worker.runJob(queueName).
                 catch(error => {
                     console.log(error);
                 });
-        // }
+        }
     }
 }
 

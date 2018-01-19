@@ -7,8 +7,8 @@ class Worker {
 
     async runJob(queueName) {
         const queue = this.queueManager.to(queueName);
-        const flow  = this.flowProvider.provide(queue);
         const job   = await this.queueManager.to(queueName).onJob();
+        const flow  = this.flowProvider.provide(job, queue);
         return flow.run(job);
     }
 }

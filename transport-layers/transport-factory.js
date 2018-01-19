@@ -1,12 +1,15 @@
 const VError      = require('verror');
 const amqp        = require('amqplib');
+const AWS         = require('aws-sdk');
 const RSMQPromise = require('rsmq-promise');
 const Promise     = require('bluebird');
+const {promisify} = require('util');
 
 const AmqpTransport   = require('./amqp/amqp-transport');
 const RsmqTransport   = require('./redis/redis-transport');
 const MemoryTransport = require('./memory/memory-transport');
 const NullTransport   = require('./null/null-transport');
+const SQSTransport    = require('./sqs/sqsTransport');
 
 class TransportFactory {
 
@@ -27,6 +30,8 @@ class TransportFactory {
                 return this.makeNullTransport(config);
             case 'memorymq':
                 return this.makeMemoryTransport(config);
+            case 'sqs':
+                return this.makeSQSTransport(config);
             default :
                 throw new VError(
                     `E_QUEUE: transport [${transport}] is not supported`);
@@ -76,13 +81,19 @@ class TransportFactory {
     }
 
     async makeRedisTransport(config) {
-        const rsmq                       = new RSMQPromise(config);
-        const listQueues                 = await rsmq.listQueues();
-        const {delay = 0, ...configFlow} = config.flow;
+        const rsmq                     = new RSMQPromise(config);
+        const listQueues               = await rsmq.listQueues();
+        let {delay = 0, ...configFlow} = config.flow;
+        delay /= 1000;
         if (!listQueues.includes(config.channelName)) {
             await rsmq.createQueue({
                 qname: config.channelName,
                 delay: delay
+            });
+        } else {
+            await rsmq.setQueueAttributes({
+                qname: config.channelName,
+                delay
             });
         }
         return new RsmqTransport(rsmq).
@@ -96,6 +107,13 @@ class TransportFactory {
 
     makeNullTransport(config) {
         return new NullTransport().setNameChannel(config.channelName);
+    }
+
+    async makeSQSTransport(config) {
+        const {flow, adapter, queueUrl, ...sqs} = config;
+        return new SQSTransport(new AWS.SQS(sqs)).
+            setQueueUrl(queueUrl).
+            setConfigFlow(config.flow);
     }
 }
 

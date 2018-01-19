@@ -16,7 +16,7 @@ class Queue {
      */
     enqueue(job) {
         let serializedJob = this.serializer.serialize(job);
-        return this.transportLayer.send(serializedJob);
+        return this.transportLayer.send(serializedJob, job.flow);
     }
 
     get options() {

@@ -14,12 +14,19 @@ class AmqpTransport extends TransportLayer {
         return this;
     }
 
+    setConfigFlow(configFlow) {
+        const {delay, ...other} = configFlow;
+        this.configFlow         = other;
+        this.options.send.delay = delay;
+        return this;
+    }
+
     setNameChannel(nameChannel = '') {
         this.nameChannel = nameChannel;
         return this;
     }
 
-    async send(jobData) {
+    async send(jobData, flow) {
         await this.channel.assertQueue(this.nameChannel);
         return this.channel.sendToQueue(
             this.nameChannel,
