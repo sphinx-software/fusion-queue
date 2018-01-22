@@ -1,17 +1,22 @@
-const VError      = require('verror');
-const amqp        = require('amqplib');
-const AWS         = require('aws-sdk');
-const RSMQPromise = require('rsmq-promise');
-const Promise     = require('bluebird');
-const {promisify} = require('util');
+const VError        = require('verror');
+const amqp          = require('amqplib');
+const AWS           = require('aws-sdk');
+const RSMQPromise   = require('rsmq-promise');
+const Promise       = require('bluebird');
+const { promisify } = require('util');
 
-const AmqpTransport   = require('./amqp/amqp-transport');
-const RsmqTransport   = require('./redis/redis-transport');
-const MemoryTransport = require('./memory/memory-transport');
-const NullTransport   = require('./null/null-transport');
-const SQSTransport    = require('./sqs/sqsTransport');
+const AmqpTransport     = require('./amqp/amqp-transport');
+const RsmqTransport     = require('./redis/redis-transport');
+const MemoryTransport   = require('./memory/memory-transport');
+const NullTransport     = require('./null/null-transport');
+const SQSTransport      = require('./sqs/sqs-transport');
+const DatabaseTransport = require('./database/database-transport');
 
 class TransportFactory {
+
+    constructor() {
+        this.denpendencies = {};
+    }
 
     /**
      *
@@ -32,11 +37,28 @@ class TransportFactory {
                 return this.makeMemoryTransport(config);
             case 'sqs':
                 return this.makeSQSTransport(config);
+            case 'database':
+                return this.makeDatabaseTransport(config);
             default :
                 throw new VError(
                     `E_QUEUE: transport [${transport}] is not supported`);
         }
     };
+
+    /**
+     *
+     * @param {String} name
+     * @param {*} dependency
+     * @return {TransportFactory}
+     */
+    inject(name, dependency) {
+        this.denpendencies[name] = dependency;
+        return this;
+    }
+
+    get(name) {
+        return this.denpendencies[name];
+    }
 
     /**
      *
@@ -81,9 +103,9 @@ class TransportFactory {
     }
 
     async makeRedisTransport(config) {
-        const rsmq                     = new RSMQPromise(config);
-        const listQueues               = await rsmq.listQueues();
-        let {delay = 0, ...configFlow} = config.flow;
+        const rsmq                       = new RSMQPromise(config);
+        const listQueues                 = await rsmq.listQueues();
+        let { delay = 0, ...configFlow } = config.flow;
         delay /= 1000;
         if (!listQueues.includes(config.channelName)) {
             await rsmq.createQueue({
@@ -113,12 +135,18 @@ class TransportFactory {
             setConfigFlow(config.flow);
     }
 
-    async makeSQSTransport(config) {
-        const {flow, accessKeyId, secretAccessKey, region, queueUrl} = config;
+    makeSQSTransport(config) {
+        const { flow, accessKeyId, secretAccessKey, region, queueUrl } = config;
         return new SQSTransport(
-            new AWS.SQS({accessKeyId, secretAccessKey, region})).
+            new AWS.SQS({ accessKeyId, secretAccessKey, region })).
             setQueueUrl(queueUrl).
             setConfigFlow(flow);
+    }
+
+    makeDatabaseTransport(config) {
+        return new DatabaseTransport(
+            this.denpendencies.database
+        ).setTable(config.nameTable).boot();
     }
 }
 

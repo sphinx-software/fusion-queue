@@ -15,9 +15,9 @@ class SqsTransport extends TransportLayer {
     }
 
     setConfigFlow(flow) {
-        let { delay, ...other }  = flow;
-        this.configFlow          = other;
-        this.params.DelaySeconds = (flow.delay / 1000) || null;
+        let { delay, ...other } = flow;
+        this.configFlow         = other;
+        this.params.delay       = (delay / 1000) || null;
         return this;
     }
 
@@ -34,7 +34,7 @@ class SqsTransport extends TransportLayer {
     getDelaySeconds(flow) {
         let delay = flow.delay / 1000;
         if (!isNaN(delay)) return delay;
-        return this.params.DelaySeconds;
+        return this.params.delay;
     }
 
     send(jobData, flow = {}) {

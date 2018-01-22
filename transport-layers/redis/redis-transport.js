@@ -15,9 +15,9 @@ class RedisTransport extends TransportLayer {
     }
 
     setConfigFlow(configFlow) {
-        const {delay, ...other} = configFlow;
-        this.configFlow         = other;
-        this.options.send.delay = delay;
+        const { delay, ...other } = configFlow;
+        this.configFlow           = other;
+        this.options.send.delay   = delay;
         return this;
     }
 

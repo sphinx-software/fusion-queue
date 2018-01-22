@@ -4,7 +4,7 @@ class FlowProvider {
 
     provide(job, queue) {
         let queueFlow = new Flow(queue);
-        let config    = {...queue.options, ...job.flow};
+        let config    = { ...queue.options, ...job.flow };
         queueFlow.delay(config.delay);
         if (config.timeout) queueFlow.timeout(config.timeout);
         queueFlow.retry(config.retry);

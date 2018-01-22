@@ -19,7 +19,9 @@ exports.register = async (container) => {
 
     container.singleton('transports', async () => {
         const configQueue      = (await container.make('config')).queue;
+        const database         = await container.make('database');
         const transportFactory = await container.make('transportFactory');
+        transportFactory.inject('database', database);
         return transportFactory.makeFromConfig(configQueue);
     });
 
