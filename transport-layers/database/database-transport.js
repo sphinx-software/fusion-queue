@@ -60,10 +60,10 @@ class DatabaseTransportLayer extends TransportLayer {
             let [response] = await trx.select('*').
                 into(this.nameTable).
                 orderBy('runAt', 'asc').
-                having('runAt', '<', new Date().getTime()).
                 where({ status: jobStatus.IDLE }).
                 limit(1);
             if (!response) return null;
+            if (response.runAt > new Date().getTime()) return null;
             await trx.from(this.nameTable).where({ id: response.id }).del();
 
             return response.jobData;
