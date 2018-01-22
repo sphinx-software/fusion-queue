@@ -26,31 +26,14 @@ class DatabaseTransportLayer extends TransportLayer {
                 table.increments();
                 table.text('jobData');
                 table.string('status', 10);
-                table.bigInteger('runAt');
             });
 
         return this;
     }
 
-    setConfigFlow(flow) {
-        let { delay, ...other } = flow;
-        this.configFlow         = other;
-        this.delayMilliSecond   = delay;
-        return this;
-    }
-
-    getDelayTime(flow) {
-        let delay = !isNaN(+flow.delay)
-            ? flow.delay
-            : this.params.delayMilliSecond;
-        return new Date().getTime() + delay;
-    }
-
-    async send(jobData, flow) {
-        const delay = this.getDelayTime(flow);
+    async send(jobData) {
         return (await this.databaseConnection.insert({
             jobData,
-            runAt : delay,
             status: jobStatus.IDLE
         }).into(this.nameTable).returning('id'))[0];
     }
@@ -59,13 +42,11 @@ class DatabaseTransportLayer extends TransportLayer {
         return this.databaseConnection.transaction(async (trx) => {
             let [response] = await trx.select('*').
                 into(this.nameTable).
-                orderBy('runAt', 'asc').
+                orderBy('id', 'asc').
                 where({ status: jobStatus.IDLE }).
                 limit(1);
             if (!response) return null;
-            if (response.runAt > new Date().getTime()) return null;
             await trx.from(this.nameTable).where({ id: response.id }).del();
-
             return response.jobData;
         });
     }

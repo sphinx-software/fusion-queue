@@ -28,7 +28,6 @@ class TransportLayer {
      */
     send(jobData, flow) {
         throw new Error('not implemented');
-        return null;
     }
 
     /**
