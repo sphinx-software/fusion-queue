@@ -1,7 +1,12 @@
 @sphinx-software/queue
 ===============
 
-A queue for sphinx-fusion . support [`rabitmq`](https://www.rabbitmq.com/) using [amqp](https://github.com/squaremo/amqp.node)
+## A queue for sphinx-fusion 
+ - support [`rabitmq`](https://www.rabbitmq.com/) using [amqp](https://github.com/squaremo/amqp.node)
+ - support [`sqs`](https://aws.amazon.com/sqs/) using [aws-sdk](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SQS.html)
+ - support [`redis-queue`](https://redis.io/) using [rsmq](https://github.com/smrchy/rsmq)
+ - support `database-queue` using [knex](http://knexjs.org/) for Postgres, MSSQL, MySQL, MariaDB, SQLite3, and Oracle 
+ - support `null-queue`,`memory-queue`
 ## implements Job
 
 ```js
@@ -12,6 +17,7 @@ class Job {
     }
     
     get flow() {
+        // overwrite option flow default (no required)
         return {
             delay:1000,
             timeout:15000,
@@ -51,34 +57,49 @@ use() {
 }
 ```
 
-## Options queue
+## Config options queue
 ```js
-module.exports = {
-    default       : 'myQueue',
-    queues: {
-        myQueue : {
+queue {
+    default: 'databaseQueue',
+    queues : {
+        rabbitMQ     : {
             url        : 'amqp://localhost',
             adapter    : 'amqp',
             channelName: 'someName',
-            // For more options see http://www.squaremobius.net/amqp.node/channel_api.html#channel_consume
+            // flow default for queue if flow for job is not available            
+            flow       : 'timeout:15000|delay:0|retry:3|rotateBack',
+            // For more options see http://www.squaremobius.net/amqp.node/channel_api.html#channel_get
             options    : {
+                send   : {
+                    noAck: true
+                },
                 receive: {
                     noAck: true
                 }
             }
         },
-        myQueue1: {
-            url        : 'amqp://localhost',
-            adapter    : 'amqp',
-            channelName: 'someName1'
-        },
-        myQueue2: {
-            url        : 'amqp://localhost',
-            adapter    : 'amqp',
+        redisMQ      : {
+            host       : '127.0.0.1',
+            flow       : 'timeout:15000|delay:900000|retry:3|pushBack',
+            port       : 6379,
+            adapter    : 'rsmq',
             channelName: 'someName2'
+        },
+        SQS          : {
+            flow           : 'timeout:15000|delay:30000|retry:3|rotateBack',
+            adapter        : 'sqs',
+            queueUrl       : 'queueURL',
+            accessKeyId    : 'accessKeyId',
+            secretAccessKey: 'secretAccessKey',
+            region         : 'us-east-1'
+        },
+        databaseQueue: {
+            flow   : 'timeout:15000|delay:30000|retry:3|rotateBack',
+            adapter: 'database'
         }
     }
 };
+
 ```
 ## Licences
 
