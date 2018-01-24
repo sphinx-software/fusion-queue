@@ -2,11 +2,11 @@
   "name": "@sphinx-software/queue",
   "version": "0.2.0",
   "description": "",
-  "main": "index.js",
+  "main": "fusion-queue.provider.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "dvha <friendd1996@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "amqplib": "^0.5.2",
