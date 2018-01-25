@@ -3,7 +3,6 @@ const amqp          = require('amqplib');
 const AWS           = require('aws-sdk');
 const RSMQPromise   = require('rsmq-promise');
 const Promise       = require('bluebird');
-const { promisify } = require('util');
 
 const AmqpTransport     = require('./amqp/amqp-transport');
 const RsmqTransport     = require('./redis/redis-transport');
